@@ -3,16 +3,30 @@ import time
 from cvzone.SelfiSegmentationModule import SelfiSegmentation
 import cvzone
 import pyfakewebcam
+from os import listdir
+from os.path import isfile, join
 
+onlyfiles = [f for f in listdir("images/") if isfile(join("images/", f))]
 # Capture the image and set the size
 cap = cv2.VideoCapture(0)
 cap.set(3, 640)
 cap.set(4,480)
 
+images = []
+
+for f in onlyfiles:
+    images.append(cv2.imread(f))
+
 # load the images
 harput = cv2.imread("images/harput.jpg")
 bursa = cv2.imread("images/bursa.jpg")
 tirebolu = cv2.imread("images/harput.jpg")
+
+
+resized_images = []
+
+for i in images:
+    resized_images.append(cv2.resize(i, (640, 480),interpolation = cv2.INTER_AREA) )
 
 # resize the images
 resized_image_harput = cv2.resize(harput, (640, 480),interpolation = cv2.INTER_AREA) 
@@ -33,7 +47,7 @@ while True:
     success, frame = cap.read()
 
     #segment the image
-    segmented = segmentor.removeBG(frame, resized_image_harput, threshold=0.8)
+    segmented = segmentor.removeBG(frame, resized_images[0], threshold=0.8)
 
 
     # imgStacked = cvzone.stackImages([segmented,frame], 2,1)
@@ -44,13 +58,13 @@ while True:
     # cv2.imshow("image", imgStacked)
     # cv2.imshow("image", resized_image_harput)
     
-    # cv2.imshow("segmented", segmented)
+    cv2.imshow("segmented", segmented)
 
     #fix the colors
     converted = cv2.cvtColor(segmented,cv2.COLOR_BGR2RGB)
 
     #put segmented and converted image into the fake webcam
-    camera.schedule_frame(converted)
+    # camera.schedule_frame(converted)
 
     time.sleep(1/30.0)
     # cv2.imshow("image", frame)
